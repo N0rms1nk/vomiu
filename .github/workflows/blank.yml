@@ -7,10 +7,5 @@ jobs:
       uses: sozo-design/curl@v1.0.2
       with:
         args: ProcessExplorer.zip https://download.sysinternals.com/files/ProcessExplorer.zip
-
-    - name: Setup Rclone
-      uses: AnimMouse/setup-rclone@v1
-      with:
-          rclone_config: ${{ secrets.RCLONE_CONF }}
       
-    - run: rclone copy /home/ProcessExplorer.zip BDoDrive:Here
+    - run: ls
