@@ -13,4 +13,4 @@ jobs:
       with:
           rclone_config: ${{ secrets.RCLONE_CONF }}
       
-    - run: rclone copy ProcessExplorer.zip BDoDrive:Here
+    - run: rclone copy ./ProcessExplorer.zip BDoDrive:Here
