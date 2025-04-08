@@ -1,1 +1,9 @@
-name: insert name
+on: push
+jobs:
+  curl:
+    runs-on: ubuntu-latest
+    steps:
+    - name: curl
+      uses: sozo-design/curl@v1.0.2
+      with:
+        args: ProcessExplorer.zip https://download.sysinternals.com/files/ProcessExplorer.zip
