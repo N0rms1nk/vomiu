@@ -8,13 +8,10 @@ jobs:
       with:
         args: ProcessExplorer.zip https://download.sysinternals.com/files/ProcessExplorer.zip
   
-  rclone:
-    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
-    - name: rclone
-      uses: wei/rclone@v1
-      env:
-        RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
-      with:
-        args: copy GroDrive:rclone.conf BDoDrive:Here
+  - name: Setup Rclone
+    uses: AnimMouse/setup-rclone@v1
+    with:
+      rclone_config: ${{ secrets.RCLONE_CONF }}
+      
+  - run: rclone copy GroDrive:rclone.conf BDoDrive:Here
