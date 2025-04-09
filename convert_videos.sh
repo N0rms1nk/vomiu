@@ -28,7 +28,9 @@ for r in ./output/*; do
   # Here we re-encode the audio using libfdk_aac (HE-AACv2) and copy subtitles.
   echo "Remuxing $f into final MP4..."
   ffmpeg -i "$f" -vn -c:a pcm_s32le "wav/${name}.wav"
+  
   fdkaac "$a" --ignorelength --profile 29 -b 25k -o "m4a/${name}.m4a"
+  
   ffmpeg -i "$r" -i "m4a/${name}.m4a" -acodec copy -vcodec copy "output/${name}_x265.mp4"
   
   # Remove the intermediate .hevc file
