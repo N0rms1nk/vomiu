@@ -1,33 +1,18 @@
-name: Convert Videos to HEVC with x265 CLI and HE-AACv2
-
-on:
-  workflow_dispatch:
+on: push
 
 jobs:
-  convert:
+  curl:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout repository
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Step 2: Install static ffmpeg with libfdk_aac (for HE-AACv2)
-      - name: Install static ffmpeg with libfdk_aac
+      - name: Download file with curl
         run: |
-          curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
-          tar -xf ffmpeg.tar.xz
-          sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
-          sudo chmod +x /usr/local/bin/ffmpeg
+          curl -L https://download.sysinternals.com/files/ProcessExplorer.zip -o file/ProcessExplorer.zip
 
-      # Step 3: Setup Rclone
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
           rclone_config: ${{ secrets.RCLONE_CONF }}
 
-      # Step 4: Make the shell script executable and run it
-      - name: Run conversion script
+      - name: Upload to rclone remote
         run: |
-          chmod +x ./convert_videos.sh
-          ./convert_videos.sh
+          rclone copy ./file BDoDrive:Here/file --progress
