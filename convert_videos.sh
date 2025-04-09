@@ -2,10 +2,20 @@
 
 # Ensure the directories exist
 mkdir -p output
+mkdir -p wav
+mkdir -p m4a
 
 # Process each video file found in the input folder
 for f in ./input/*; do
   filename=$(basename "$f")
+  name="${filename%.*}"
+
+for a in ./wav/*; do
+  filename=$(basename "$a")
+  name="${filename%.*}"
+
+for r in ./output/*; do
+  filename=$(basename "$r")
   name="${filename%.*}"
   
   echo "Processing video: $f"
@@ -17,10 +27,9 @@ for f in ./input/*; do
   # Step 2: Remux the x265-encoded video with the original audio and subtitles.
   # Here we re-encode the audio using libfdk_aac (HE-AACv2) and copy subtitles.
   echo "Remuxing $f into final MP4..."
-  ffmpeg -i "output/${name}.hevc" -i "$f" \
-         -map 0:v -map 1:a? -map 1:s? \
-         -c:v copy -c:a libfdk_aac -profile:a aac_he_v2 -b:a 48k -c:s copy \
-         "output/${name}_x265.mp4"
+  ffmpeg -i "$f" -vn -c:a pcm_s32le "wav/${name}.wav"
+  fdkaac "$a" --ignorelength --profile 29 -b 25k -o "m4a/${name}.m4a"
+  ffmpeg -i "$r" -i "m4a/${name}.m4a" -acodec copy -vcodec copy "output/${name}_x265.mp4"
   
   # Remove the intermediate .hevc file
   rm "output/${name}.hevc"
