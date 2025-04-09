@@ -22,7 +22,7 @@ for f in ./input/*; do
   ffmpeg -i "$f" -vn -c:a pcm_s32le "wav/${name}.wav"
   
   # Step 3: Encode WAV to m4a using fdkaac with HE-AACv2
-  fdkaac "wav/${name}.wav" --ignorelength -P 3 -b 25k -o "m4a/${name}.m4a"
+  fdkaac "wav/${name}.wav" --ignorelength -P 29 -b 25k -o "m4a/${name}.m4a"
   
   # Step 4: Remux the HEVC video and the m4a audio into final MP4
   ffmpeg -i "output/${name}.hevc" -i "m4a/${name}.m4a" -c:v copy -c:a copy "output/${name}_x265.mp4"
