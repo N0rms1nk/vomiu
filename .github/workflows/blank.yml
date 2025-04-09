@@ -31,6 +31,7 @@ jobs:
         run: |
           mkdir -p input
           rclone copy DBOX:DL ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
+          rclone copy DBOX:DL BDoDrive:Here/Hevc --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
 
       # Step 5: Convert videos using FFmpeg piped to x265
       - name: Run conversion script
