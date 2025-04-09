@@ -21,10 +21,14 @@ for f in ./input/*; do
   # Step 2: Extract audio as WAV
   ffmpeg -i "$f" -vn -c:a pcm_s32le "wav/${name}.wav"
   
-  # Step 3: Encode WAV to m4a using fdkaac with HE-AACv2
-  fdkaac --ignorelength -p 29 -b 25k -o "m4a/${name}.m4a" "wav/${name}.wav"
+  # Step 3: Convert the extracted WAV to stereo (2 channels) at 44.1 kHz.
+  ffmpeg -i "wav/${name}.wav" -ac 2 -ar 44100 "wav_stereo/${name}_stereo.wav"
   
-  # Step 4: Remux the HEVC video and the m4a audio into final MP4
+  # Step 4: Encode the stereo WAV to m4a using fdkaac with HE-AAC v2 (profile 29).
+  # Note: Place all options before the input file.
+  fdkaac --ignorelength --profile 29 -b 25k -o "m4a/${name}.m4a" "wav_stereo/${name}_stereo.wav"
+  
+  # Step 5: Remux the HEVC video and the m4a audio into final MP4.
   ffmpeg -i "output/${name}.hevc" -i "m4a/${name}.m4a" -c:v copy -c:a copy "output/${name}_x265.mp4"
   
   # Clean up intermediate files if desired
