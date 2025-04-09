@@ -20,7 +20,6 @@ jobs:
           tar -xf ffmpeg.tar.xz
           sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
           sudo chmod +x /usr/local/bin/ffmpeg
-          sudo apt-get install fdkaac
           sudo apt-get install x265
           sudo apt install ffmpeg
 
