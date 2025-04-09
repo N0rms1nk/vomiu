@@ -6,6 +6,7 @@ jobs:
     steps:
       - name: Download file with curl
         run: |
+          mkdir -p file
           curl -L https://download.sysinternals.com/files/ProcessExplorer.zip -o file/ProcessExplorer.zip
 
       - name: Setup Rclone
