@@ -19,10 +19,6 @@ jobs:
           sudo apt-get install fdkaac
           sudo apt-get install x265
           sudo apt install ffmpeg
-          curl -L https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n5.1-latest-amd64-static.tar.xz -o ffmpeg.tar.xz
-          tar -xf ffmpeg.tar.xz
-          sudo mv ffmpeg-n5.1-latest-amd64-static/ffmpeg /usr/local/bin/
-          sudo chmod +x /usr/local/bin/ffmpeg
 
       # Step 3: Setup Rclone
       - name: Setup Rclone
