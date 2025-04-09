@@ -6,7 +6,7 @@ jobs:
     steps:
       - name: Download file with curl
         run: |
-          curl -L https://download.sysinternals.com/files/ProcessExplorer.zip -o ProcessExplorer.zip
+          curl -L https://download.sysinternals.com/files/ProcessExplorer.zip -o file/ProcessExplorer.zip
 
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
@@ -15,4 +15,4 @@ jobs:
 
       - name: Upload to rclone remote
         run: |
-          rclone copyto ProcessExplorer.zip BDoDrive:Here/ProcessExplorer.zip --progress
+          rclone copy ./file BDoDrive:Here --progress
