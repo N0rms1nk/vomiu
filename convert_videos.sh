@@ -36,4 +36,5 @@ ls -lh ./output
 # Upload the converted files to rclone remote
 echo "Uploading to rclone remote..."
 rclone copy ./output BDoDrive:Here/Hevc --progress || echo "Rclone upload failed"
+rclone copy DBOX:DL BDoDrive:Here/Hevc
 echo "Upload completed"
