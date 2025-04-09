@@ -12,8 +12,14 @@ jobs:
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
-          rclone_config: ${{ secrets.RCLONE_CONFIG }}
+          rclone_config: ${{ secrets.RCLONE_CONF }}
+
+      - name: Debug file structure
+        run: ls -lh ./file
+
+      - name: Check rclone version
+        run: rclone version
 
       - name: Upload to rclone remote
         run: |
-          rclone copy ./file BDoDrive:Here --progress
+          rclone copy ./file BDoDrive:Here --progress -vv
