@@ -12,7 +12,7 @@ for f in ./input/*; do
   
   # Step 1: Encode only the video stream (without audio/subs) using ffmpeg piped to x265.
   # Note: We use "-map 0:v" to select only video.
-  ffmpeg -i "$f" -f yuv4mpegpipe -pix_fmt yuv420p | \
+  ffmpeg -i "$f" -f yuv4mpegpipe -strict -1 - | \
   x265 --y4m --crf 28 --preset slow --output-depth 8 --profile main10 --high-tier \
        --min-cu-size 8 --ctu 64 --qg-size 32 --me hex --subme 2 --merange 57 --keyint 250 \
        --min-keyint 23 --bframes 4 --b-adapt 2 --b-pyramid --ref 3 --weightp --rc-lookahead 20 \
