@@ -34,8 +34,7 @@ jobs:
             name="${filename%.*}"
 
             # Encode video via pipe to x265
-            ffmpeg -i "$f" -vf fps=24 -map 0 -c:a aac -b:a 128k -c:s copy -f yuv4mpegpipe -pix_fmt yuv420p -strict -1 - | \
-            x265 --y4m --crf 28 --preset slow -o "output/${name}.hevc" -
+            ffmpeg -i "$f" -map 0 -c:a aac -b:a 128k -c:s copy -f yuv4mpegpipe -pix_fmt yuv420p - | \ x265 --y4m --crf 28 --preset slow -o "output/${name}.hevc" -
 
             # Remux everything back into mp4 with metadata and subtitles
             ffmpeg -i "$f" -i "output/${name}.hevc" -map 0 -map -0:v -map 1:v -c copy "output/${name}_x265.mp4"
