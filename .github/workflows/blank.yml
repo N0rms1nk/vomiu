@@ -19,7 +19,7 @@ jobs:
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
-          rclone_config: ${{ secrets.RCLONE_CONFIG }}
+          rclone_config: ${{ secrets.RCLONE_CONF }}
 
       - name: Download videos from rclone remote
         run: |
