@@ -27,7 +27,7 @@ for f in ./input/*; do
   
   # Step 4: Encode the stereo WAV to m4a using fdkaac with HE-AAC v2 (profile 29).
   # Note: Place all options before the input file.
-  fdkaac --ignorelength --profile 29 -b 25k -o "m4a/${name}.m4a" "wav_stereo/${name}_stereo.wav"
+  ffmpeg -i "wav_stereo/${name}_stereo.wav" -c:a aac -b 25k -profile:a aac_he_v2 "m4a/${name}.m4a"
   
   # Step 5: Remux the HEVC video and the m4a audio into final MP4.
   ffmpeg -i "output/${name}.hevc" -i "m4a/${name}.m4a" -c:v copy -c:a copy "output/${name}_x265.mp4"
