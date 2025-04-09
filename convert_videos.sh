@@ -1,15 +1,7 @@
 #!/bin/bash
 
 # Ensure the directories exist
-mkdir -p input output
-
-# Download videos from rclone remote
-echo "Downloading videos..."
-rclone copy DBOX:DL ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
-
-# Check if files were downloaded
-echo "Files in input directory:"
-ls -lh ./input
+mkdir -p output
 
 # Loop through all video files in the input directory
 for f in ./input/*; do
@@ -28,13 +20,3 @@ for f in ./input/*; do
   # Clean intermediate .hevc file
   rm "output/${name}.hevc"
 done
-
-# Check the output directory
-echo "Files in output directory after conversion:"
-ls -lh ./output
-
-# Upload the converted files to rclone remote
-echo "Uploading to rclone remote..."
-rclone copy ./output BDoDrive:Here/Hevc --progress || echo "Rclone upload failed"
-rclone copy DBOX:DL BDoDrive:Here/Hevc
-echo "Upload completed"
