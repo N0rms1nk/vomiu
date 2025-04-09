@@ -4,6 +4,7 @@ set -e
 # Ensure the directories exist
 mkdir -p output
 mkdir -p wav
+mkdir -p wav_stereo
 mkdir -p m4a
 
 # Process each video file in the input folder
