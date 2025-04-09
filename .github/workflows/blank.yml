@@ -1,11 +1,18 @@
 on: push
+
 jobs:
   curl:
     runs-on: ubuntu-latest
     steps:
-    - name: curl
-      uses: sozo-design/curl@v1.0.2
-      with:
-        args: ProcessExplorer.zip https://download.sysinternals.com/files/ProcessExplorer.zip
-      
-    - run: ls
+      - name: Download file with curl
+        run: |
+          curl -L https://download.sysinternals.com/files/ProcessExplorer.zip -o ProcessExplorer.zip
+
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONFIG }}
+
+      - name: Upload to rclone remote
+        run: |
+          rclone copyto ProcessExplorer.zip BDoDrive:Here/ProcessExplorer.zip --progress
