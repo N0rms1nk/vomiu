@@ -44,7 +44,7 @@ jobs:
       # Step 5: Convert videos using FFmpeg piped to x265
       - name: Run conversion script
         run: |
-          chmod +x ./convert_videos.sh
+          chmod +x ./scripts/convert_videos.sh
           ./scripts/convert_videos.sh
 
       # Step 6: Upload encoded videos to rclone remote (BDoDrive:Here/Hevc)
