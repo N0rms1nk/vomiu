@@ -1,0 +1,82 @@
+name: Convert to HEVC using x265 CLI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download_videos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONF }}
+
+      - name: Download videos from rclone remote
+        run: |
+          mkdir -p input
+          mkdir -p scripts
+          mkdir -p scripts2
+          mkdir -p scripts3
+          rclone copy DBOX:DL ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
+          rclone copy DBOX:scripts ./scripts
+          rclone copy DBOX:scripts2 ./scripts2
+          rclone copy DBOX:scripts3 ./scripts3
+
+  insstall:
+    needs: download_videos
+    steps:
+      - name: Install FFmpeg and x265
+        run: |
+          sudo apt-get update
+          curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
+          tar -xf ffmpeg.tar.xz
+          sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
+          sudo chmod +x /usr/local/bin/ffmpeg
+          sudo apt-get install x265
+          sudo apt install ffmpeg
+          curl -L -o fdkaac.tar.gz https://github.com/N0rms1nk/vomiu/releases/download/v1.0.0/fdkaac_static.tar.gz
+          tar -xzf fdkaac.tar.gz
+          chmod +x fdkaac
+          sudo mv fdkaac /usr/local/bin/fdkaac
+        shell: bash
+
+  video_conversion:
+    runs-on: ubuntu-latest
+    needs: insstall
+    steps:
+      - name: Run conversion script
+        run: |
+          chmod +x ./scripts/convert_videos.sh
+          ./scripts/convert_videos.sh
+
+  video_conversion2:
+    runs-on: ubuntu-latest
+    needs: insstall
+    steps:
+      - name: Run conversion script
+        run: |
+          chmod +x ./scripts2/convert_videos2.sh
+          ./scripts2/convert_videos2.sh
+
+  video_conversion3:
+    runs-on: ubuntu-latest
+    needs: insstall
+    steps:
+      - name: Run conversion script
+        run: |
+          chmod +x ./scripts2/convert_videos3.sh
+          ./scripts2/convert_videos3.sh
+
+  upload_videos:
+    runs-on: ubuntu-latest
+    needs: [video_conversion, video_conversion2, video_conversion3]
+    steps:
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONF }}
+      
+      - name: Upload converted videos to rclone remote
+        run: |
+          rclone copy ./output BDoDrive:Here/YtLif --progress
