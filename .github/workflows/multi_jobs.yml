@@ -1,29 +1,17 @@
-name: Convert multi
-
 on:
   workflow_dispatch:
 
 jobs:
-  download_videos:
+  convert:
     runs-on: ubuntu-latest
-    steps:
-      - name: Setup Rclone
-        uses: AnimMouse/setup-rclone@v1
-        with:
-          rclone_config: ${{ secrets.RCLONE_CONF }}
 
-      - name: Download videos from rclone remote
-        run: |
-          mkdir -p input
-          mkdir -p scripts
-          rclone copy BDoDrive:YT/Life ./input --progress
-          rclone copy DBOX:scripts ./scripts
-
-  insstall:
-    runs-on: ubuntu-latest
-    needs: download_videos
     steps:
-      - name: Install FFmpeg and x265
+      # Step 1: Checkout repository (if needed)
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install static ffmpeg with libfdk_aac (for HE-AACv2)
+      - name: Install static ffmpeg with libfdk_aac
         run: |
           sudo apt-get update
           curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
@@ -38,72 +26,125 @@ jobs:
           sudo mv fdkaac /usr/local/bin/fdkaac
         shell: bash
 
-  video_conversion:
-    runs-on: ubuntu-latest
-    needs: insstall
-    steps:
+      # Step 3: Setup Rclone
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
           rclone_config: ${{ secrets.RCLONE_CONF }}
 
+      # Step 4: Download videos from rclone remote (DBOX:DL)
       - name: Download videos from rclone remote
         run: |
+          mkdir -p input
           mkdir -p scripts
+          rclone copy BDoDrive:YT/Life ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
           rclone copy DBOX:scripts ./scripts
-          
+
+      # Step 5: Convert videos using FFmpeg piped to x265
       - name: Run conversion script
         run: |
           chmod +x ./scripts/convert_videos.sh
           ./scripts/convert_videos.sh
 
-  video_conversion2:
+      # Step 6: Upload encoded videos to rclone remote (BDoDrive:Here/Hevc)
+      - name: Upload encoded videos to rclone remote
+        run: |
+          rclone copy ./output BDoDrive:Here/YtLif --progress
+
+  convert2:
     runs-on: ubuntu-latest
-    needs: insstall
+
     steps:
+      # Step 1: Checkout repository (if needed)
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install static ffmpeg with libfdk_aac (for HE-AACv2)
+      - name: Install static ffmpeg with libfdk_aac
+        run: |
+          sudo apt-get update
+          curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
+          tar -xf ffmpeg.tar.xz
+          sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
+          sudo chmod +x /usr/local/bin/ffmpeg
+          sudo apt-get install x265
+          sudo apt install ffmpeg
+          curl -L -o fdkaac.tar.gz https://github.com/N0rms1nk/vomiu/releases/download/v1.0.0/fdkaac_static.tar.gz
+          tar -xzf fdkaac.tar.gz
+          chmod +x fdkaac
+          sudo mv fdkaac /usr/local/bin/fdkaac
+        shell: bash
+
+      # Step 3: Setup Rclone
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
           rclone_config: ${{ secrets.RCLONE_CONF }}
 
+      # Step 4: Download videos from rclone remote (DBOX:DL)
       - name: Download videos from rclone remote
         run: |
+          mkdir -p input
           mkdir -p scripts
+          rclone copy BDoDrive:YT/Life ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
           rclone copy DBOX:scripts ./scripts
-          
+
+      # Step 5: Convert videos using FFmpeg piped to x265
       - name: Run conversion script
         run: |
-          chmod +x ./scripts/convert_videos2.sh
+          chmod +x ./scripts/convert_videos_2.sh
           ./scripts/convert_videos_2.sh
 
-  video_conversion3:
+      # Step 6: Upload encoded videos to rclone remote (BDoDrive:Here/Hevc)
+      - name: Upload encoded videos to rclone remote
+        run: |
+          rclone copy ./output BDoDrive:Here/YtLif --progress
+
+  convert3:
     runs-on: ubuntu-latest
-    needs: insstall
+
     steps:
+      # Step 1: Checkout repository (if needed)
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Step 2: Install static ffmpeg with libfdk_aac (for HE-AACv2)
+      - name: Install static ffmpeg with libfdk_aac
+        run: |
+          sudo apt-get update
+          curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
+          tar -xf ffmpeg.tar.xz
+          sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
+          sudo chmod +x /usr/local/bin/ffmpeg
+          sudo apt-get install x265
+          sudo apt install ffmpeg
+          curl -L -o fdkaac.tar.gz https://github.com/N0rms1nk/vomiu/releases/download/v1.0.0/fdkaac_static.tar.gz
+          tar -xzf fdkaac.tar.gz
+          chmod +x fdkaac
+          sudo mv fdkaac /usr/local/bin/fdkaac
+        shell: bash
+
+      # Step 3: Setup Rclone
       - name: Setup Rclone
         uses: AnimMouse/setup-rclone@v1
         with:
           rclone_config: ${{ secrets.RCLONE_CONF }}
 
+      # Step 4: Download videos from rclone remote (DBOX:DL)
       - name: Download videos from rclone remote
         run: |
+          mkdir -p input
           mkdir -p scripts
+          rclone copy BDoDrive:YT/Life ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
           rclone copy DBOX:scripts ./scripts
-          
+
+      # Step 5: Convert videos using FFmpeg piped to x265
       - name: Run conversion script
         run: |
-          chmod +x ./scripts/convert_videos3.sh
+          chmod +x ./scripts/convert_videos_3.sh
           ./scripts/convert_videos_3.sh
 
-  upload_videos:
-    runs-on: ubuntu-latest
-    needs: [video_conversion, video_conversion2, video_conversion3]
-    steps:
-      - name: Setup Rclone
-        uses: AnimMouse/setup-rclone@v1
-        with:
-          rclone_config: ${{ secrets.RCLONE_CONF }}
-      
-      - name: Upload converted videos to rclone remote
+      # Step 6: Upload encoded videos to rclone remote (BDoDrive:Here/Hevc)
+      - name: Upload encoded videos to rclone remote
         run: |
           rclone copy ./output BDoDrive:Here/YtLif --progress
