@@ -1,0 +1,74 @@
+name: Parallel Video Conversion
+
+on:
+  workflow_dispatch:
+
+jobs:
+  list-files:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONF }}
+
+      - name: List video files
+        id: set-matrix
+        run: |
+          mkdir -p input
+          rclone lsf BDoDrive:YT/Modelling/Vid --files-only --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" > files.txt
+          files=$(jq -Rn '[inputs | split("\n") | .[] | select(length > 0)]' < files.txt)
+          echo "matrix={\"file\":$files}" >> "$GITHUB_OUTPUT"
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
+          tar -xf ffmpeg.tar.xz
+          sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
+          sudo chmod +x /usr/local/bin/ffmpeg
+          sudo apt-get install x265
+          sudo apt install ffmpeg
+          curl -L -o fdkaac.tar.gz https://github.com/N0rms1nk/vomiu/releases/download/v1.0.0/fdkaac_static.tar.gz
+          tar -xzf fdkaac.tar.gz
+          chmod +x fdkaac
+          sudo mv fdkaac /usr/local/bin/fdkaac
+          
+  convert:
+    needs: list-files
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{fromJson(needs.list-files.outputs.matrix)}}
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONF }}
+
+      - name: Download input file
+        run: |
+          mkdir -p input
+          mkdir -p scripts
+          rclone copy DBOX:scripts ./scripts
+          rclone copy "BDoDrive:YT/Modelling/Vid/${{ matrix.file }}" ./input
+
+      - name: Convert video
+        run: |
+          chmod +x ./scripts/convert_video.sh
+          ./scripts/convert_video.sh "./input/${{ matrix.file }}"
+
+      - name: Upload result
+        run: |
+          rclone copy ./output BDoDrive:Here/YT/Modelling --progress
