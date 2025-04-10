@@ -46,12 +46,14 @@ jobs:
           curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
           tar -xf ffmpeg.tar.xz
           sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
+          sudo chmod +x /usr/local/bin/ffmpeg
           sudo apt-get install x265
           sudo apt install ffmpeg
           curl -L -o fdkaac.tar.gz https://github.com/N0rms1nk/vomiu/releases/download/v1.0.0/fdkaac_static.tar.gz
           tar -xzf fdkaac.tar.gz
           chmod +x fdkaac
           sudo mv fdkaac /usr/local/bin/fdkaac
+        shell: bash
 
       - name: Download video
         run: |
