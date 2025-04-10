@@ -16,12 +16,8 @@ jobs:
         run: |
           mkdir -p input
           mkdir -p scripts
-          mkdir -p scripts2
-          mkdir -p scripts3
           rclone copy DBOX:DL ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
           rclone copy DBOX:scripts ./scripts
-          rclone copy DBOX:scripts2 ./scripts2
-          rclone copy DBOX:scripts3 ./scripts3
 
   insstall:
     needs: download_videos
@@ -56,8 +52,8 @@ jobs:
     steps:
       - name: Run conversion script
         run: |
-          chmod +x ./scripts2/convert_videos2.sh
-          ./scripts2/convert_videos_2.sh
+          chmod +x ./scripts/convert_videos2.sh
+          ./scripts/convert_videos_2.sh
 
   video_conversion3:
     runs-on: ubuntu-latest
@@ -65,8 +61,8 @@ jobs:
     steps:
       - name: Run conversion script
         run: |
-          chmod +x ./scripts2/convert_videos3.sh
-          ./scripts2/convert_videos_3.sh
+          chmod +x ./scripts/convert_videos3.sh
+          ./scripts/convert_videos_3.sh
 
   upload_videos:
     runs-on: ubuntu-latest
