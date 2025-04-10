@@ -1,4 +1,4 @@
-name: Convert to HEVC using x265 CLI
+name: Convert multi
 
 on:
   workflow_dispatch:
