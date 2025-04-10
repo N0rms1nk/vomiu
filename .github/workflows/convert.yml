@@ -3,6 +3,10 @@ name: Convert All Videos in Remote Folder
 on:
   workflow_dispatch:
 
+concurrency:
+  group: convert-videos
+  cancel-in-progress: false
+
 jobs:
   list-files:
     runs-on: ubuntu-latest
