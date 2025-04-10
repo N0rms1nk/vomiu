@@ -56,6 +56,8 @@ jobs:
       - name: Download video
         run: |
           mkdir -p input
+          mkdir -p scripts
+          rclone copy DBOX:scripts ./scripts
           rclone copy "BDoDrive:YT/Modelling/Vid/${{ matrix.file }}" ./input/
 
       - name: Make script executable and run
