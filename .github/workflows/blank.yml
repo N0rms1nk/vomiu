@@ -39,7 +39,7 @@ jobs:
         run: |
           mkdir -p input
           mkdir -p scripts
-          rclone copy DBOX:DL ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
+          rclone copy BDoDrive:YT/Modelling/Vid ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
           rclone copy DBOX:scripts ./scripts
 
       # Step 5: Convert videos using FFmpeg piped to x265
@@ -51,4 +51,4 @@ jobs:
       # Step 6: Upload encoded videos to rclone remote (BDoDrive:Here/Hevc)
       - name: Upload encoded videos to rclone remote
         run: |
-          rclone copy ./output BDoDrive:Here/Hevc --progress
+          rclone copy ./output BDoDrive:Here/YTM --progress
