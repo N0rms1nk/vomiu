@@ -16,7 +16,7 @@ jobs:
         run: |
           mkdir -p input
           mkdir -p scripts
-          rclone copy DBOX:DL ./input --include "*.mp4" --include "*.mkv" --include "*.avi" --include "*.mov" --include "*.webm" --progress
+          rclone copy BDoDrive:YT/Life ./input --progress
           rclone copy DBOX:scripts ./scripts
 
   insstall:
