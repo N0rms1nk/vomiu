@@ -1,37 +1,80 @@
 #!/bin/bash
 set -e
 
-input="$1"
-filename=$(basename "$input")
+INPUT_FILE="$1"
+
+# === CONFIGURABLE OPTIONS ===
+# Set to "source" to copy from source, or set specific value (e.g., "24", "1280:-1", etc.)
+FPS="source"             # or e.g. "24"
+RESOLUTION="source"      # or e.g. "960:-1"
+CRF=30
+DEBLOCK="0:0"
+RD=4
+AUDIO_BITRATE="25k"
+# ============================
+
+# Install deps
+sudo apt-get update
+sudo apt-get install -y x265 jq
+
+curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
+tar -xf ffmpeg.tar.xz
+sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
+sudo chmod +x /usr/local/bin/ffmpeg
+
+curl -L -o fdkaac.tar.gz https://github.com/N0rms1nk/vomiu/releases/download/v1.0.0/fdkaac_static.tar.gz
+tar -xzf fdkaac.tar.gz
+chmod +x fdkaac
+sudo mv fdkaac /usr/local/bin/fdkaac
+
+mkdir -p ~/.config/rclone
+echo "${RCLONE_CONF}" > ~/.config/rclone/rclone.conf
+
+# Prepare folders
+mkdir -p input output wav wav_stereo m4a
+
+# Download single file
+rclone copy "BDoDrive:YT/Life/$INPUT_FILE" ./input --progress
+
+# Get filename
+f="./input/$INPUT_FILE"
+filename=$(basename "$f")
 name="${filename%.*}"
 
-# Customizable variables
-fps="copy"            # Set to "copy" or number like 24
-resolution="copy"     # Set to "copy" or format like 1280x720
-crf=37
-deblock="0:0"
-rd=8
-audio_bitrate="25k"
+# Get source resolution and fps if needed
+if [[ "$FPS" == "source" ]]; then
+  FPS_FILTER=""
+else
+  FPS_FILTER="fps=${FPS}"
+fi
 
-mkdir -p output wav wav_stereo m4a
+if [[ "$RESOLUTION" == "source" ]]; then
+  SCALE_FILTER=""
+else
+  SCALE_FILTER="scale=${RESOLUTION}"
+fi
 
-# Build optional filters
-vf_filter=""
-[ "$fps" != "copy" ] && vf_filter="fps=$fps"
-[ "$resolution" != "copy" ] && vf_filter="${vf_filter},scale=${resolution}"
-vf_filter=$(echo "$vf_filter" | sed 's/^,//')
+# Combine filters
+FILTERS=$(IFS=, ; echo "${FPS_FILTER},${SCALE_FILTER}" | sed 's/^,//;s/,$//')
 
-# Video conversion
-ffmpeg -i "$input" ${vf_filter:+-vf "$vf_filter"} -f yuv4mpegpipe -strict -1 - | \
-x265 - --crf "$crf" --deblock "$deblock" --rd "$rd" --y4m -o "output/${name}.hevc"
+# Encode video
+if [[ -z "$FILTERS" ]]; then
+  echo "Encoding video without scaling or fps conversion..."
+  ffmpeg -i "$f" -f yuv4mpegpipe -strict -1 - | \
+    x265 - --crf "$CRF" --deblock "$DEBLOCK" --rd "$RD" --y4m --output "output/${name}.hevc"
+else
+  echo "Encoding video with filters: $FILTERS"
+  ffmpeg -i "$f" -vf "$FILTERS" -f yuv4mpegpipe -strict -1 - | \
+    x265 - --crf "$CRF" --deblock "$DEBLOCK" --rd "$RD" --y4m --output "output/${name}.hevc"
+fi
 
-# Audio conversion
-ffmpeg -i "$input" -vn -c:a pcm_s32le "wav/${name}.wav"
+# Audio
+ffmpeg -i "$f" -vn -c:a pcm_s32le "wav/${name}.wav"
 ffmpeg -i "wav/${name}.wav" -ac 2 -ar 44100 "wav_stereo/${name}_stereo.wav"
-fdkaac --profile 29 -b "$audio_bitrate" -o "m4a/${name}.m4a" "wav_stereo/${name}_stereo.wav"
+fdkaac --profile 29 -b "$AUDIO_BITRATE" -o "m4a/${name}.m4a" "wav_stereo/${name}_stereo.wav"
 
-# Remux
+# Final mux
 ffmpeg -i "output/${name}.hevc" -i "m4a/${name}.m4a" -c:v copy -c:a copy "output/${name}_x265.mp4"
 
-# Optional cleanups
-rm -f "output/${name}.hevc" "wav/${name}.wav"
+# Upload to remote
+rclone copy ./output BDoDrive:Here/Hevc --progress
