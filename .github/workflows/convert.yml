@@ -22,7 +22,7 @@ jobs:
         id: get-files
         run: |
           mkdir -p scripts
-          rclone copy DBOX:scripts ./scripts
+          rclone copy DBOX:scripts ./scripts --include "convert_single_video.sh"
           mkdir -p tmp
           rclone lsf BDoDrive:YT/Life --files-only --include "*.mp4" --include "*.mkv" --include "*.mov" --include "*.avi" --include "*.webm" > tmp/filelist.txt
           jq -R -s -c 'split("\n") | map(select(. != ""))' tmp/filelist.txt > tmp/matrix.json
@@ -31,7 +31,7 @@ jobs:
         id: set-matrix
         run: |
           mkdir -p scripts
-          rclone copy DBOX:scripts ./scripts
+          rclone copy DBOX:scripts ./scripts --include "convert_single_video.sh"
           echo "matrix=$(cat tmp/matrix.json)" >> $GITHUB_OUTPUT
 
   convert:
@@ -49,7 +49,7 @@ jobs:
       - name: Run conversion script for single file
         run: |
           mkdir -p scripts
-          rclone copy DBOX:scripts ./scripts
+          rclone copy DBOX:scripts ./scripts --include "convert_single_video.sh"
           chmod +x ./scripts/convert_single_video.sh
           ./scripts/convert_single_video.sh "${{ matrix.file }}"
         env:
