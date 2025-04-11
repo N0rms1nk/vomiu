@@ -21,6 +21,8 @@ jobs:
       - name: Get list of videos
         id: get-files
         run: |
+          mkdir -p scripts
+          rclone copy DBOX:scripts ./scripts
           mkdir -p tmp
           rclone lsf BDoDrive:YT/Life --files-only --include "*.mp4" --include "*.mkv" --include "*.mov" --include "*.avi" --include "*.webm" > tmp/filelist.txt
           jq -R -s -c 'split("\n") | map(select(. != ""))' tmp/filelist.txt > tmp/matrix.json
@@ -28,6 +30,8 @@ jobs:
       - name: Save matrix output
         id: set-matrix
         run: |
+          mkdir -p scripts
+          rclone copy DBOX:scripts ./scripts
           echo "matrix=$(cat tmp/matrix.json)" >> $GITHUB_OUTPUT
 
   convert:
