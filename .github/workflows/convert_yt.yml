@@ -44,7 +44,7 @@ jobs:
       - name: Download YouTube video
         run: |
           mkdir -p input
-          yt-dlp "${{ matrix.url }}" -f "bv*[height<=1080]+140" -o "input/%(title).100s.%(ext)s"
+          yt-dlp --cookies youtube_cookies.txt "${{ matrix.url }}" -f "bv*[height<=1080]+140" -o "input/%(title).100s.%(ext)s"
 
       - name: Run conversion
         run: |
