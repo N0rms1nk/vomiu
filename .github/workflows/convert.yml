@@ -49,9 +49,7 @@ jobs:
 
       - name: Run conversion script for single file
         run: |
-          mkdir -p scripts
-          mkdir -p ~/.config/rclone
-          echo "${RCLONE_CONF}" | base64 -d > ~/.config/rclone/rclone.conf
+          mkdir -p scripts 
           rclone copy DBOX:scripts ./scripts
           chmod +x ./scripts/convert_single_video.sh
           ./scripts/convert_single_video.sh "${{ matrix.file }}"
