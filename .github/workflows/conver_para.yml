@@ -61,8 +61,8 @@ jobs:
         run: |
           mkdir -p scripts 
           rclone copy DBOX:scripts ./scripts
-          chmod +x ./scripts/convert_video.sh
-          ./scripts/convert_video.sh "./input/${{ matrix.file }}"
+          chmod +x ./scripts/convert_para_video.sh
+          ./scripts/convert_para_video.sh "./input/${{ matrix.file }}"
 
       - name: Upload output
         run: |
