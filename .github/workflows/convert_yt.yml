@@ -38,6 +38,8 @@ jobs:
 
       - name: Download YouTube video
         run: |
+          sudo apt-get install jq python3 python3-pip
+          pip install yt-dlp
           mkdir -p input
           yt-dlp "${{ matrix.url }}" -f "bv*[height<=1080]+140" -o "input/%(title).100s.%(ext)s"
 
