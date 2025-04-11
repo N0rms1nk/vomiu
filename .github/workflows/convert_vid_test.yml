@@ -1,4 +1,4 @@
-name: Parallel Video Encoding
+name: Convert Video Test
 
 on:
   workflow_dispatch:
