@@ -1,0 +1,49 @@
+name: Download and Convert YouTube Videos
+
+on:
+  workflow_dispatch:
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Read URLs and set matrix
+        id: set-matrix
+        run: |
+          urls=$(cat yt_urls.txt | grep -v '^#' | awk NF | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "matrix=$urls"
+          echo "matrix=$urls" >> $GITHUB_OUTPUT
+
+  convert:
+    needs: prepare
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        url: ${{fromJson(needs.prepare.outputs.matrix)}}
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Rclone
+        uses: AnimMouse/setup-rclone@v1
+        with:
+          rclone_config: ${{ secrets.RCLONE_CONF }}
+
+      - name: Download YouTube video
+        run: |
+          mkdir -p input
+          yt-dlp "${{ matrix.url }}" -f "bv*[height<=1080]+140" -o "input/%(title).100s.%(ext)s"
+
+      - name: Run conversion
+        run: |
+          chmod +x ./scripts/convert_yt.sh
+          ./scripts/convert_yt.sh
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
