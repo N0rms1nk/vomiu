@@ -6,7 +6,7 @@ INPUT_FILE="$1"
 # === CONFIGURABLE OPTIONS ===
 # Set to "source" to copy from source, or set specific value (e.g., "24", "1280:-1", etc.)
 FPS="source"             # or e.g. "24"
-RESOLUTION="source"      # or e.g. "960:-1"
+RESOLUTION="source"      # or e.g. "1280:-1"
 CRF=30
 DEBLOCK="0:0"
 RD=4
