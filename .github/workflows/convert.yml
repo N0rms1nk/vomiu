@@ -1,17 +1,14 @@
-name: Convert All Videos in Remote Folder
+name: Parallel Video Encoding
 
 on:
   workflow_dispatch:
 
-concurrency:
-  group: convert-videos
-  cancel-in-progress: false
-
 jobs:
-  list-files:
+  list-videos:
+    name: List videos from rclone remote
     runs-on: ubuntu-latest
     outputs:
-      files: ${{ steps.set-matrix.outputs.files }}
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -21,56 +18,33 @@ jobs:
         with:
           rclone_config: ${{ secrets.RCLONE_CONF }}
 
-      - name: List video files from remote
+      - name: Get list of videos
+        id: get-files
+        run: |
+          mkdir -p tmp
+          rclone lsf BDoDrive:YT --files-only --include "*.mp4" --include "*.mkv" --include "*.mov" --include "*.avi" --include "*.webm" > tmp/filelist.txt
+          jq -R -s -c 'split("\n") | map(select(. != ""))' tmp/filelist.txt > tmp/matrix.json
+
+      - name: Save matrix output
         id: set-matrix
         run: |
-          mkdir -p input
-          rclone lsf "BDoDrive:YT/Modelling/Vid" --include "*.mp4" --include "*.mkv" --include "*.webm" --files-only > files.txt
-          files=$(jq -R -s -c 'split("\n") | map(select(length > 0))' files.txt)
-          echo "files=$files" >> "$GITHUB_OUTPUT"
+          echo "matrix=$(cat tmp/matrix.json)" >> $GITHUB_OUTPUT
 
   convert:
-    needs: list-files
+    name: Convert ${{ matrix.file }}
+    needs: list-videos
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        file: ${{ fromJson(needs.list-files.outputs.files) }}
+        file: ${{ fromJson(needs.list-videos.outputs.matrix) }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Rclone
-        uses: AnimMouse/setup-rclone@v1
-        with:
-          rclone_config: ${{ secrets.RCLONE_CONF }}
-
-      - name: Install tools (ffmpeg, x265, fdkaac)
+      - name: Run conversion script for single file
         run: |
-          sudo apt-get update
-          curl -L https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz -o ffmpeg.tar.xz
-          tar -xf ffmpeg.tar.xz
-          sudo mv ffmpeg-*-amd64-static/ffmpeg /usr/local/bin/
-          sudo chmod +x /usr/local/bin/ffmpeg
-          sudo apt-get install x265
-          sudo apt install ffmpeg
-          curl -L -o fdkaac.tar.gz https://github.com/N0rms1nk/vomiu/releases/download/v1.0.0/fdkaac_static.tar.gz
-          tar -xzf fdkaac.tar.gz
-          chmod +x fdkaac
-          sudo mv fdkaac /usr/local/bin/fdkaac
-        shell: bash
-
-      - name: Download video
-        run: |
-          mkdir -p input
-          mkdir -p scripts
-          rclone copy DBOX:scripts ./scripts
-          rclone copy "BDoDrive:YT/Modelling/Vid/${{ matrix.file }}" ./input/
-
-      - name: Make script executable and run
-        run: |
-          chmod +x ./scripts/convert_video.sh
-          ./scripts/convert_video.sh "./input/${{ matrix.file }}"
-
-      - name: Upload output
-        run: |
-          rclone copy ./output BDoDrive:Here/YT/Modelling --progress
+          chmod +x ./scripts/convert_single_video.sh
+          ./scripts/convert_single_video.sh "${{ matrix.file }}"
+        env:
+          RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
